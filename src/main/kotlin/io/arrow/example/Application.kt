@@ -1,8 +1,8 @@
-package io.arrow-kt.example
+package io.arrow.example
 
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.arrow-kt.example.plugins.*
+import io.arrow.example.plugins.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {

@@ -1,4 +1,4 @@
-package io.arrow-kt.example.plugins
+package io.arrow.example.plugins
 
 import io.ktor.routing.*
 import io.ktor.http.*

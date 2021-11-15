@@ -1,4 +1,4 @@
-package io.arrow-kt.example
+package io.arrow.example
 
 import io.ktor.routing.*
 import io.ktor.http.*
@@ -8,7 +8,7 @@ import io.ktor.response.*
 import io.ktor.request.*
 import kotlin.test.*
 import io.ktor.server.testing.*
-import io.arrow-kt.example.plugins.*
+import io.arrow.example.plugins.*
 
 class ApplicationTest {
     @Test

@@ -11,7 +11,7 @@ plugins {
 group = "io.arrow-kt.example"
 version = "0.0.1"
 application {
-    mainClass.set("io.arrow-kt.example.ApplicationKt")
+    mainClass.set("io.arrow.example.ApplicationKt")
 }
 
 repositories {
