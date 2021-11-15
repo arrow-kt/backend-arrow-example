@@ -2,10 +2,11 @@ val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val arrow_version: String by project
+val arrow_meta_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.5.31"
     kotlin("plugin.serialization") version "1.6.0"
 }
 
@@ -17,7 +18,21 @@ application {
 
 repositories {
     mavenCentral()
+    maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
 }
+
+buildscript {
+    repositories {
+        maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
+    }
+    dependencies {
+        classpath("io.arrow-kt.optics:io.arrow-kt.optics.gradle.plugin:1.5.31-SNAPSHOT")
+        // classpath("io.arrow-kt.analysis:io.arrow-kt.analysis.gradle.plugin:1.5.31-SNAPSHOT")
+    }
+}
+
+apply(plugin = "io.arrow-kt.optics")
+// apply(plugin = "io.arrow-kt.analysis")
 
 dependencies {
     implementation("io.arrow-kt:arrow-core:$arrow_version")
