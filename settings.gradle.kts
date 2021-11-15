@@ -1,0 +1,1 @@
+rootProject.name = "io.arrow-kt.example.backend-arrow-example"
