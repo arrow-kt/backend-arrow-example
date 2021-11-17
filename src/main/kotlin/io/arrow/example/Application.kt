@@ -41,7 +41,7 @@ class ExampleApp(val warehouse: Warehouse, val billing: Billing) {
         val order = call.receive<Order>()
         when (val result = either<Any, List<Entry>> {
           validateStructure(order).bind()
-          order.entries.parTraverseValidated(Semigroup.nonEmptyList()) {
+          order.entries.parTraverseValidated {
             warehouse.validateAvailability(it.id, it.amount)
           }.bind()
         }) {

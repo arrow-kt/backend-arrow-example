@@ -13,6 +13,7 @@ import arrow.core.validNel
 import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
+import io.arrow.example.ensure
 import io.arrow.example.flatten
 import kotlinx.serialization.Serializable
 
@@ -41,5 +42,5 @@ fun validateEntryId(id: String): ValidatedNel<ValidateStructureProblem, String> 
     id
   }.toValidated()
 
-fun validateEntryAmount(amount: Int): Validated<NonEmptyList<ValidateStructureProblem>, Int> =
-  if (amount > 0) amount.validNel() else ValidateStructureProblem.NON_POSITIVE_AMOUNT.invalidNel()
+fun validateEntryAmount(amount: Int): ValidatedNel<ValidateStructureProblem, Int> =
+  amount.ensure({ it > 0 }) { ValidateStructureProblem.NON_POSITIVE_AMOUNT }
