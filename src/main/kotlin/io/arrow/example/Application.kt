@@ -1,14 +1,17 @@
 package io.arrow.example
 
+import arrow.core.Validated
 import io.arrow.example.external.Billing
 import io.arrow.example.external.Warehouse
 import io.arrow.example.external.impl.BillingImpl
 import io.arrow.example.external.impl.WarehouseImpl
+import io.arrow.example.validation.validateStructure
 import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
@@ -21,8 +24,17 @@ class ExampleApp(val warehouse: Warehouse, val billing: Billing) {
     install(AutoHeadResponse)
 
     routing {
-      get("/") {
+      get("/hello") {
         call.respondText("Hello World!")
+      }
+      get("/process") {
+        val order = call.receive<Order>()
+        when (val result = validateStructure(order)) {
+          is Validated.Invalid ->
+            call.respond(status = HttpStatusCode.BadRequest, message = result.value)
+          is Validated.Valid ->
+            call.respondText("all good")
+        }
       }
     }
   }

@@ -4,6 +4,7 @@ import arrow.core.Nel
 import arrow.core.NonEmptyList
 import arrow.core.Validated
 import arrow.core.ValidatedNel
+import arrow.core.computations.either
 import arrow.core.computations.either.eager
 import arrow.core.invalidNel
 import arrow.core.nel
@@ -12,7 +13,9 @@ import arrow.core.validNel
 import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class ValidateStructureProblem {
   EMPTY_ORDER,
   EMPTY_ID,
@@ -20,8 +23,8 @@ enum class ValidateStructureProblem {
   NON_POSITIVE_AMOUNT
 }
 
-fun validateStructure(order: Order): ValidatedNel<ValidateStructureProblem, Order> =
-  eager<Nel<ValidateStructureProblem>, Order> {
+suspend fun validateStructure(order: Order): ValidatedNel<ValidateStructureProblem, Order> =
+  either<Nel<ValidateStructureProblem>, Order> {
     ensure(order.entries.isNotEmpty()) { ValidateStructureProblem.EMPTY_ORDER.nel() }
     order.entries.traverseValidated(::validateEntry).bind()
     order
