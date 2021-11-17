@@ -13,6 +13,7 @@ import arrow.core.validNel
 import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
+import io.arrow.example.flatten
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -27,7 +28,7 @@ suspend fun validateStructure(order: Order): ValidatedNel<ValidateStructureProbl
   either<Nel<ValidateStructureProblem>, Order> {
     ensure(order.entries.isNotEmpty()) { ValidateStructureProblem.EMPTY_ORDER.nel() }
     order.entries.traverseValidated(::validateEntry).bind()
-    order
+    order.flatten()
   }.toValidated()
 
 fun validateEntry(entry: Entry): ValidatedNel<ValidateStructureProblem, Entry> =
