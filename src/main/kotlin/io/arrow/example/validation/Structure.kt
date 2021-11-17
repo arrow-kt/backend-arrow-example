@@ -19,17 +19,21 @@ enum class ValidateStructureProblem {
 }
 
 fun Order.validateStructure(): ValidatedNel<ValidateStructureProblem, Order> =
-  entries.check(ValidateStructureProblem.EMPTY_ORDER, List<Entry>::isNotEmpty).andThen {
-    entries.traverseValidated(Entry::validateEntry)
-  }.map(::Order)
+either<Nel<ValidateStructureProblem>, Order> {
+  ensure(entries.isNotEmpty()) { EMPTY_ORDER }
+  entries.traverseValidated(Entry::validateEntry).bind()
+  this
+}.toValidated()
 
 fun Entry.validateEntry(): ValidatedNel<ValidateStructureProblem, Entry> =
   id.validateEntryId()
     .zip(amount.validateEntryAmount(), ::Entry)
 
 fun String.validateEntryId(): ValidatedNel<ValidateStructureProblem, String> =
-  check(ValidateStructureProblem.EMPTY_ID, String::isNotEmpty).andThen {
-    check(ValidateStructureProblem.INCORRECT_ID) { Regex("^ID-(\\d){4}\$").matches(it) }
+  either<Nel<ValidateStructureProblem>, String> {
+    ensure(isNotEmpty()) { EMPTY_ID }
+    ensure(Regex("^ID-(\\d){4}\$").matches(this)) { INCORRECT_ID }
+    this
   }
 
 fun Int.validateEntryAmount(): Validated<NonEmptyList<ValidateStructureProblem>, Int> =
