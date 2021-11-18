@@ -11,15 +11,11 @@ interface Billing {
   suspend fun processBilling(order: Map<String, Int>): BillingResponse
 }
 
-class BillingWithBreaker(
-  private val underlying: Billing,
-  private val circuitBreaker: CircuitBreaker,
-  private val retries: Int) : Billing {
-
+fun Billing.withBreaker(circuitBreaker: CircuitBreaker, retries: Int): Billing = object : Billing {
   override suspend fun processBilling(order: Map<String, Int>): BillingResponse =
     (Schedule.recurs<BillingResponse>(retries) zipRight Schedule.doWhile { it == BillingResponse.SYSTEM_ERROR }).repeat {
       circuitBreaker.protectOrThrow {
-        underlying.processBilling(order)
+        this@withBreaker.processBilling(order)
       }
     }
 }

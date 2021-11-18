@@ -5,11 +5,11 @@ import arrow.core.computations.either
 import arrow.fx.coroutines.CircuitBreaker
 import io.arrow.example.external.Billing
 import io.arrow.example.external.BillingResponse
-import io.arrow.example.external.BillingWithBreaker
 import io.arrow.example.external.Warehouse
 import io.arrow.example.external.impl.BillingImpl
 import io.arrow.example.external.impl.WarehouseImpl
 import io.arrow.example.external.validateAvailability
+import io.arrow.example.external.withBreaker
 import io.arrow.example.validation.validateStructure
 import io.ktor.application.*
 import io.ktor.server.engine.*
@@ -74,7 +74,7 @@ suspend fun main() {
   // inject implementation as parameters
   val app = ExampleApp(
     WarehouseImpl(Url("my.internal.warehouse.service")),
-    BillingWithBreaker(BillingImpl(Url("my.external.billing.service")), circuitBreaker, retries)
+    BillingImpl(Url("my.external.billing.service")).withBreaker(circuitBreaker, retries)
   )
   // start the app
   embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
