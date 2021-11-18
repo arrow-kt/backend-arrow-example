@@ -1,16 +1,11 @@
 package io.arrow.example
 
 import arrow.core.Either
-import arrow.core.Validated
 import arrow.core.computations.either
-import arrow.core.invalidNel
-import arrow.core.left
-import arrow.core.right
-import arrow.core.valid
-import arrow.core.validNel
-import arrow.fx.coroutines.parTraverseValidated
-import arrow.typeclasses.Semigroup
+import arrow.fx.coroutines.CircuitBreaker
 import io.arrow.example.external.Billing
+import io.arrow.example.external.BillingResponse
+import io.arrow.example.external.BillingWithBreaker
 import io.arrow.example.external.Warehouse
 import io.arrow.example.external.impl.BillingImpl
 import io.arrow.example.external.impl.WarehouseImpl
@@ -25,10 +20,15 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 
 // dependencies are declared as interfaces
 // where we mark everything as suspend
-class ExampleApp(val warehouse: Warehouse, val billing: Billing) {
+class ExampleApp(
+  private val warehouse: Warehouse,
+  private val billing: Billing
+) {
   fun configure(app: Application) = app.run {
     install(ContentNegotiation) { json() }
     install(AutoHeadResponse)
@@ -47,8 +47,13 @@ class ExampleApp(val warehouse: Warehouse, val billing: Billing) {
         }) {
           is Either.Left<Any> ->
             call.respond(status = HttpStatusCode.BadRequest, message = result.value)
-          is Either.Right<List<Entry>> -> {
-            call.respondText("all good")
+          is Either.Right<List<Entry>> -> when (billing.processBilling(mapOf())) {
+            BillingResponse.OK ->
+              call.respondText("ok")
+            BillingResponse.USER_ERROR ->
+              call.respondText(status = HttpStatusCode.BadRequest) { "not enough items" }
+            BillingResponse.SYSTEM_ERROR ->
+              call.respondText(status = HttpStatusCode.InternalServerError) { "server error" }
           }
         }
       }
@@ -56,11 +61,20 @@ class ExampleApp(val warehouse: Warehouse, val billing: Billing) {
   }
 }
 
-fun main() {
+@ExperimentalTime
+suspend fun main() {
+  // create the policy for talking to the billing service
+  val circuitBreaker = CircuitBreaker.of(
+    maxFailures = 2,
+    resetTimeout = 2.seconds,
+    exponentialBackoffFactor = 2.0, // enable exponentialBackoffFactor
+    maxResetTimeout = 60.seconds,   // limit exponential back-off time
+  )
+  val retries = 5
   // inject implementation as parameters
   val app = ExampleApp(
     WarehouseImpl(Url("my.internal.warehouse.service")),
-    BillingImpl(Url("my.external.billing.service"))
+    BillingWithBreaker(BillingImpl(Url("my.external.billing.service")), circuitBreaker, retries)
   )
   // start the app
   embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
