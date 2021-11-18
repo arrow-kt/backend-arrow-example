@@ -1,14 +1,23 @@
 package io.arrow.example.validation
 
+import arrow.core.Nel
+import arrow.core.NonEmptyList
+import arrow.core.Validated
 import arrow.core.ValidatedNel
-import arrow.core.andThen
+import arrow.core.computations.either
+import arrow.core.computations.either.eager
 import arrow.core.invalidNel
-import arrow.core.sequenceValidated
+import arrow.core.nel
 import arrow.core.traverseValidated
 import arrow.core.validNel
+import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
+import io.arrow.example.ensure
+import io.arrow.example.flatten
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class ValidateStructureProblem {
   EMPTY_ORDER,
   EMPTY_ID,
@@ -16,24 +25,22 @@ enum class ValidateStructureProblem {
   NON_POSITIVE_AMOUNT
 }
 
-fun Order.validateStructure(): ValidatedNel<ValidateStructureProblem, Order> =
-  validateAll(
-    entries.check(ValidateStructureProblem.EMPTY_ORDER, List<Entry>::isNotEmpty),
-    entries.traverseValidated(Entry::validateStructure)
-  )
+suspend fun validateStructure(order: Order): ValidatedNel<ValidateStructureProblem, Order> =
+  either<Nel<ValidateStructureProblem>, Order> {
+    ensure(order.entries.isNotEmpty()) { ValidateStructureProblem.EMPTY_ORDER.nel() }
+    order.entries.traverseValidated(::validateEntry).bind()
+    order.flatten()
+  }.toValidated()
 
-fun Entry.validateStructure(): ValidatedNel<ValidateStructureProblem, Entry> =
-  validateAll(
-    id.check(ValidateStructureProblem.EMPTY_ID, String::isNotEmpty).andThen {
-      id.check(ValidateStructureProblem.INCORRECT_ID) {
-        Regex("^ID-(\\d){4}\$").matches(it)
-      }
-    },
-    amount.check(ValidateStructureProblem.NON_POSITIVE_AMOUNT) { it > 0 }
-  )
+fun validateEntry(entry: Entry): ValidatedNel<ValidateStructureProblem, Entry> =
+  validateEntryId(entry.id).zip(validateEntryAmount(entry.amount), ::Entry)
 
-fun <E, A> A.check(problem: E, predicate: (A) -> Boolean): ValidatedNel<E, A> =
-  if (predicate(this)) this.validNel() else problem.invalidNel()
+fun validateEntryId(id: String): ValidatedNel<ValidateStructureProblem, String> =
+  eager<Nel<ValidateStructureProblem>, String> {
+    ensure(id.isNotEmpty()) { ValidateStructureProblem.EMPTY_ID.nel() }
+    ensure(Regex("^ID-(\\d){4}\$").matches(id)) { ValidateStructureProblem.INCORRECT_ID.nel() }
+    id
+  }.toValidated()
 
-fun <E, A> A.validateAll(vararg validations: ValidatedNel<E, *>): ValidatedNel<E, A> =
-  validations.toList().sequenceValidated().map { this }
+fun validateEntryAmount(amount: Int): ValidatedNel<ValidateStructureProblem, Int> =
+  amount.ensure({ it > 0 }) { ValidateStructureProblem.NON_POSITIVE_AMOUNT }

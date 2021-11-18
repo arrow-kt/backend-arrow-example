@@ -10,6 +10,8 @@ import io.ktor.response.*
 import io.ktor.request.*
 import kotlin.test.*
 import io.ktor.server.testing.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ApplicationTest {
 
@@ -20,10 +22,42 @@ class ApplicationTest {
   @Test
   fun testRoot() {
     withTestApplication({ app.configure(this) }) {
-      handleRequest(HttpMethod.Get, "/").apply {
+      handleRequest(HttpMethod.Get, "/hello").apply {
         assertEquals(HttpStatusCode.OK, response.status())
         assertEquals("Hello World!", response.content)
       }
+    }
+  }
+
+  @Test
+  fun `empty order gives error`() = testProcess(
+    Order(emptyList())
+  ) {
+    assertEquals(HttpStatusCode.BadRequest, response.status())
+    assertEquals("""["EMPTY_ORDER"]""", response.content)
+  }
+
+  @Test
+  fun `wrong id gives error`() = testProcess(
+    Order(listOf(Entry("NOT-AN-ID", 2)))
+  ) {
+    assertEquals(HttpStatusCode.BadRequest, response.status())
+    assertEquals("""["INCORRECT_ID"]""", response.content)
+  }
+
+  @Test
+  fun `reasonable order`() = testProcess(
+    Order(listOf(Entry("ID-1234", 2)))
+  ) {
+    assertEquals(HttpStatusCode.OK, response.status())
+  }
+
+  private fun testProcess(o: Order, f: TestApplicationCall.() -> Unit) {
+    withTestApplication({ app.configure(this) }) {
+      handleRequest(HttpMethod.Get, "/process") {
+        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBody(Json.encodeToString(o))
+      }.apply(f)
     }
   }
 }
