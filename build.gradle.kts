@@ -33,8 +33,8 @@ buildscript {
     }
 }
 
-// apply(plugin = "io.arrow-kt.optics")
-apply(plugin = "io.arrow-kt.analysis")
+apply(plugin = "io.arrow-kt.optics")
+// apply(plugin = "io.arrow-kt.analysis")
 
 dependencies {
     implementation("io.arrow-kt:arrow-core:$arrow_version")
