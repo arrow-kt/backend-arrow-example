@@ -1,23 +1,17 @@
 package io.arrow.example.validation
 
 import arrow.core.Nel
-import arrow.core.NonEmptyList
-import arrow.core.Validated
 import arrow.core.ValidatedNel
 import arrow.core.computations.either
 import arrow.core.computations.either.eager
-import arrow.core.invalidNel
 import arrow.core.nel
 import arrow.core.traverseValidated
-import arrow.core.validNel
 import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
 import io.arrow.example.ensure
 import io.arrow.example.flatten
-import kotlinx.serialization.Serializable
 
-@Serializable
 enum class ValidateStructureProblem {
   EMPTY_ORDER,
   EMPTY_ID,

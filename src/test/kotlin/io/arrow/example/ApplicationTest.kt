@@ -1,5 +1,6 @@
 package io.arrow.example
 
+import com.google.gson.Gson
 import io.arrow.example.external.test.BillingTest
 import io.arrow.example.external.test.WarehouseTest
 import io.ktor.routing.*
@@ -10,14 +11,14 @@ import io.ktor.response.*
 import io.ktor.request.*
 import kotlin.test.*
 import io.ktor.server.testing.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 class ApplicationTest {
 
   // inject fake implementations
   private val app =
     ExampleApp(WarehouseTest(100), BillingTest(200))
+  // turn things into JSON
+  private val json = Gson()
 
   @Test
   fun testRoot() {
@@ -56,7 +57,7 @@ class ApplicationTest {
     withTestApplication({ app.configure(this) }) {
       handleRequest(HttpMethod.Get, "/process") {
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-        setBody(Json.encodeToString(o))
+        setBody(json.toJson(o))
       }.apply(f)
     }
   }
