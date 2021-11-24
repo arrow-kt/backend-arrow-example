@@ -20,7 +20,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 // dependencies are declared as interfaces
@@ -66,9 +66,9 @@ suspend fun main() {
   // create the policy for talking to the billing service
   val circuitBreaker = CircuitBreaker.of(
     maxFailures = 2,
-    resetTimeout = Duration.seconds(2),
+    resetTimeout = 2.seconds,
     exponentialBackoffFactor = 2.0, // enable exponentialBackoffFactor
-    maxResetTimeout = Duration.seconds(60),  // limit exponential back-off time
+    maxResetTimeout = 60.seconds,  // limit exponential back-off time
   )
   val retries = 5
   // inject implementation as parameters
