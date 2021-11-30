@@ -16,24 +16,24 @@ application {
 }
 
 repositories {
-    mavenLocal()
+    // mavenLocal()
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 buildscript {
     repositories {
-        mavenLocal()
+        // mavenLocal()
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
     }
     dependencies {
-        classpath("io.arrow-kt.optics:io.arrow-kt.optics.gradle.plugin:1.6.0-SNAPSHOT")
-        classpath("io.arrow-kt.analysis:io.arrow-kt.analysis.gradle.plugin:1.6.0-SNAPSHOT")
+        classpath("io.arrow-kt.optics:io.arrow-kt.optics.gradle.plugin:2.0-SNAPSHOT")
+        classpath("io.arrow-kt.analysis.kotlin:io.arrow-kt.analysis.kotlin.gradle.plugin:2.0-SNAPSHOT")
     }
 }
 
 apply(plugin = "io.arrow-kt.optics")
-apply(plugin = "io.arrow-kt.analysis")
+apply(plugin = "io.arrow-kt.analysis.kotlin")
 
 dependencies {
     implementation("io.arrow-kt:arrow-core:$arrow_version")
