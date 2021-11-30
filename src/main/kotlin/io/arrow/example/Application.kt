@@ -15,11 +15,11 @@ import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.features.*
+import io.ktor.gson.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.serialization.*
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -30,7 +30,7 @@ class ExampleApp(
   private val billing: Billing
 ) {
   fun configure(app: Application) = app.run {
-    install(ContentNegotiation) { json() }
+    install(ContentNegotiation) { gson() }
     install(AutoHeadResponse)
 
     routing {
@@ -68,7 +68,7 @@ suspend fun main() {
     maxFailures = 2,
     resetTimeout = 2.seconds,
     exponentialBackoffFactor = 2.0, // enable exponentialBackoffFactor
-    maxResetTimeout = 60.seconds,   // limit exponential back-off time
+    maxResetTimeout = 60.seconds,  // limit exponential back-off time
   )
   val retries = 5
   // inject implementation as parameters

@@ -1,11 +1,15 @@
 package io.arrow.example
 
-import kotlinx.serialization.Serializable
+import arrow.optics.optics
 
-@Serializable
-data class Order(val entries: List<Entry>)
-@Serializable
-data class Entry(val id: String, val amount: Int)
+@optics
+data class Order(val entries: List<Entry>) {
+  companion object { }
+}
+@optics
+data class Entry(val id: String, val amount: Int) {
+  companion object { }
+}
 
 fun Order.flatten(): Order = Order(
   entries
