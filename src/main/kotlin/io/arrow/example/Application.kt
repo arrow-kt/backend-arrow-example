@@ -47,14 +47,15 @@ class ExampleApp(
         }) {
           is Either.Left<Any> ->
             call.respond(status = HttpStatusCode.BadRequest, message = result.value)
-          is Either.Right<List<Entry>> -> when (billing.processBilling(mapOf())) {
-            BillingResponse.OK ->
-              call.respondText("ok")
-            BillingResponse.USER_ERROR ->
-              call.respondText(status = HttpStatusCode.BadRequest) { "not enough items" }
-            BillingResponse.SYSTEM_ERROR ->
-              call.respondText(status = HttpStatusCode.InternalServerError) { "server error" }
-          }
+          is Either.Right<List<Entry>> ->
+            when (billing.processBilling(result.value.associate(Entry::asPair))) {
+              BillingResponse.OK ->
+                call.respondText("ok")
+              BillingResponse.USER_ERROR ->
+                call.respondText(status = HttpStatusCode.BadRequest) { "not enough items" }
+              BillingResponse.SYSTEM_ERROR ->
+                call.respondText(status = HttpStatusCode.InternalServerError) { "server error" }
+            }
         }
       }
     }
