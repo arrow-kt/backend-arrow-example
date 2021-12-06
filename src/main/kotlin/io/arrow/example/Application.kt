@@ -47,7 +47,7 @@ class ExampleApp(
         call.respondText("Hello World!")
       }
       get("/process") {
-        when (val result = either<OutgoingContent, List<Entry>> {
+        when (val result = either<BadRequest, List<Entry>> {
           val order = Either.catch { call.receive<Order>() }
             .mapLeft { badRequest(it.message ?: "Received an invalid order") }
             .bind()
@@ -62,7 +62,7 @@ class ExampleApp(
             badRequest("Following productIds weren't available: ${availability.joinToString { it.productId }}")
           }.bind()
         }) {
-          is Either.Left<OutgoingContent> ->
+          is Either.Left<BadRequest> ->
             call.respond(result.value)
           is Either.Right<List<Entry>> -> when (billing.processBilling(mapOf())) {
             BillingResponse.OK ->
@@ -78,7 +78,9 @@ class ExampleApp(
   }
 }
 
-private fun badRequest(message: String): OutgoingContent =
+typealias BadRequest = TextContent
+
+private fun badRequest(message: String): TextContent =
   TextContent(message, ContentType.Text.Plain, HttpStatusCode.BadRequest)
 
 @ExperimentalTime
