@@ -11,15 +11,24 @@ import io.arrow.example.external.impl.WarehouseImpl
 import io.arrow.example.external.validateAvailability
 import io.arrow.example.external.withBreaker
 import io.arrow.example.validation.validateStructure
-import io.ktor.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.features.*
-import io.ktor.gson.*
-import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.content.TextContent
+import io.ktor.features.AutoHeadResponse
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.Url
+import io.ktor.http.content.OutgoingContent
+import io.ktor.request.receive
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -38,15 +47,23 @@ class ExampleApp(
         call.respondText("Hello World!")
       }
       get("/process") {
-        val order = call.receive<Order>()
-        when (val result = either<Any, List<Entry>> {
-          validateStructure(order).bind()
+        when (val result = either<OutgoingContent, List<Entry>> {
+          val order = Either.catch { call.receive<Order>() }
+            .mapLeft { badRequest(it.message ?: "Received an invalid order") }
+            .bind()
+
+          validateStructure(order).mapLeft { problems ->
+            badRequest(problems.joinToString { it.name })
+          }.bind()
+
           order.entries.parTraverseValidated {
             warehouse.validateAvailability(it.id, it.amount)
+          }.mapLeft { availability ->
+            badRequest("Following productIds weren't available: ${availability.joinToString { it.productId }}")
           }.bind()
         }) {
-          is Either.Left<Any> ->
-            call.respond(status = HttpStatusCode.BadRequest, message = result.value)
+          is Either.Left<OutgoingContent> ->
+            call.respond(result.value)
           is Either.Right<List<Entry>> -> when (billing.processBilling(mapOf())) {
             BillingResponse.OK ->
               call.respondText("ok")
@@ -60,6 +77,9 @@ class ExampleApp(
     }
   }
 }
+
+private fun badRequest(message: String): OutgoingContent =
+  TextContent(message, ContentType.Text.Plain, HttpStatusCode.BadRequest)
 
 @ExperimentalTime
 suspend fun main() {
