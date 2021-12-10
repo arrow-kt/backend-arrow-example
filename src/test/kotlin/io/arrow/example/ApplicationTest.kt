@@ -35,7 +35,7 @@ class ApplicationTest {
     Order(emptyList())
   ) {
     assertEquals(HttpStatusCode.BadRequest, response.status())
-    assertEquals("""["EMPTY_ORDER"]""", response.content)
+    assertEquals("EMPTY_ORDER", response.content)
   }
 
   @Test
@@ -43,7 +43,7 @@ class ApplicationTest {
     Order(listOf(Entry("NOT-AN-ID", 2)))
   ) {
     assertEquals(HttpStatusCode.BadRequest, response.status())
-    assertEquals("""["INCORRECT_ID"]""", response.content)
+    assertEquals("INCORRECT_ID", response.content)
   }
 
   @Test
