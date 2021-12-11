@@ -6,6 +6,7 @@ val arrow_meta_version: String by project
 
 plugins {
     application
+    id("com.google.devtools.ksp") version "1.6.0-1.0.1"
     kotlin("jvm") version "1.6.0"
 }
 
@@ -16,26 +17,25 @@ application {
 }
 
 repositories {
-    // mavenLocal()
+    mavenLocal()
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 buildscript {
     repositories {
-        // mavenLocal()
+        mavenLocal()
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
     }
     dependencies {
-        classpath("io.arrow-kt.optics:io.arrow-kt.optics.gradle.plugin:2.0-SNAPSHOT")
         classpath("io.arrow-kt.analysis.kotlin:io.arrow-kt.analysis.kotlin.gradle.plugin:2.0-SNAPSHOT")
     }
 }
 
-apply(plugin = "io.arrow-kt.optics")
 apply(plugin = "io.arrow-kt.analysis.kotlin")
 
 dependencies {
+    ksp("io.arrow-kt:arrow-optics-ksp:2.0-SNAPSHOT")
     implementation("io.arrow-kt:arrow-core:$arrow_version")
     implementation("io.arrow-kt:arrow-fx-coroutines:$arrow_version")
     implementation("io.arrow-kt:arrow-optics:$arrow_version")

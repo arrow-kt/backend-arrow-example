@@ -47,7 +47,7 @@ class ExampleApp(
         call.respondText("Hello World!")
       }
       get("/process") {
-        when (val result = either<BadRequest, List<Entry>> {
+        val result = either<BadRequest, List<Entry>> {
           val order = Either.catch { call.receive<Order>() }
             .mapLeft { badRequest(it.message ?: "Received an invalid order") }
             .bind()
@@ -61,17 +61,19 @@ class ExampleApp(
           }.mapLeft { availability ->
             badRequest("Following productIds weren't available: ${availability.joinToString { it.productId }}")
           }.bind()
-        }) {
+        }
+        when (result) {
           is Either.Left<BadRequest> ->
             call.respond(result.value)
-          is Either.Right<List<Entry>> -> when (billing.processBilling(mapOf())) {
-            BillingResponse.OK ->
-              call.respondText("ok")
-            BillingResponse.USER_ERROR ->
-              call.respondText(status = HttpStatusCode.BadRequest) { "not enough items" }
-            BillingResponse.SYSTEM_ERROR ->
-              call.respondText(status = HttpStatusCode.InternalServerError) { "server error" }
-          }
+          is Either.Right<List<Entry>> ->
+            when (billing.processBilling(result.value.associate(Entry::asPair))) {
+              BillingResponse.OK ->
+                call.respondText("ok")
+              BillingResponse.USER_ERROR ->
+                call.respond(badRequest("not enough items"))
+              BillingResponse.SYSTEM_ERROR ->
+                call.respondText(status = HttpStatusCode.InternalServerError) { "server error" }
+            }
         }
       }
     }

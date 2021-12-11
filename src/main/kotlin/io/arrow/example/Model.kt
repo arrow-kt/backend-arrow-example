@@ -3,12 +3,16 @@ package io.arrow.example
 import arrow.optics.optics
 
 @optics
-data class Order(val entries: List<Entry>) {
-  companion object { }
-}
-@optics
 data class Entry(val id: String, val amount: Int) {
-  companion object { }
+  companion object // required by @optics
+
+  val asPair: Pair<String, Int>
+    get() = Pair(id, amount)
+}
+
+@optics
+data class Order(val entries: List<Entry>) {
+  companion object // required by @optics
 }
 
 fun Order.flatten(): Order = Order(
