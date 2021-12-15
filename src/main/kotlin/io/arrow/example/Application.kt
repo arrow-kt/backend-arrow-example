@@ -59,7 +59,7 @@ class ExampleApp(
           order.entries.parTraverseValidated {
             warehouse.validateAvailability(it.id, it.amount)
           }.mapLeft { availability ->
-            badRequest("Following productIds weren't available: ${availability.joinToString { it.productId }}")
+            badRequest("Following productIds weren't available: ${availability.joinToString { it.productId.value }}")
           }.bind()
         }
         when (result) {

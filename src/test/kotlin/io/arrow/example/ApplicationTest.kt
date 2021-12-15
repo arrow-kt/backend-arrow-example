@@ -12,7 +12,7 @@ import io.ktor.request.*
 import kotlin.test.*
 import io.ktor.server.testing.*
 
-class ApplicationTest {
+class ApplicationTest() {
 
   // inject fake implementations
   private val app =
@@ -40,7 +40,7 @@ class ApplicationTest {
 
   @Test
   fun `wrong id gives error`() = testProcess(
-    Order(listOf(Entry("NOT-AN-ID", 2)))
+    Order(listOf(Entry(ProductId("NOT-AN-ID"), 2)))
   ) {
     assertEquals(HttpStatusCode.BadRequest, response.status())
     assertEquals("INCORRECT_ID", response.content)
@@ -48,7 +48,7 @@ class ApplicationTest {
 
   @Test
   fun `reasonable order`() = testProcess(
-    Order(listOf(Entry("ID-1234", 2)))
+    Order(listOf(Entry(ProductId("ID-1234"), 2)))
   ) {
     assertEquals(HttpStatusCode.OK, response.status())
   }

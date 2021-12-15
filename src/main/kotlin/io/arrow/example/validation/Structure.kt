@@ -9,6 +9,7 @@ import arrow.core.traverseValidated
 import arrow.core.zip
 import io.arrow.example.Entry
 import io.arrow.example.Order
+import io.arrow.example.ProductId
 import io.arrow.example.ensure
 import io.arrow.example.flatten
 
@@ -29,10 +30,10 @@ suspend fun validateStructure(order: Order): ValidatedNel<ValidateStructureProbl
 fun validateEntry(entry: Entry): ValidatedNel<ValidateStructureProblem, Entry> =
   validateEntryId(entry.id).zip(validateEntryAmount(entry.amount), ::Entry)
 
-fun validateEntryId(id: String): ValidatedNel<ValidateStructureProblem, String> =
-  eager<Nel<ValidateStructureProblem>, String> {
-    ensure(id.isNotEmpty()) { ValidateStructureProblem.EMPTY_ID.nel() }
-    ensure(Regex("^ID-(\\d){4}\$").matches(id)) { ValidateStructureProblem.INCORRECT_ID.nel() }
+fun validateEntryId(id: ProductId): ValidatedNel<ValidateStructureProblem, ProductId> =
+  eager<Nel<ValidateStructureProblem>, ProductId> {
+    ensure(id.value.isNotEmpty()) { ValidateStructureProblem.EMPTY_ID.nel() }
+    ensure(Regex("^ID-(\\d){4}\$").matches(id.value)) { ValidateStructureProblem.INCORRECT_ID.nel() }
     id
   }.toValidated()
 

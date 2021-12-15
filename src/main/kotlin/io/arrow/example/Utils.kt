@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 fun <A, E> A.ensure(predicate: (A) -> Boolean, problem: () -> E): ValidatedNel<E, A> =
   if (predicate(this)) this.validNel() else problem().invalidNel()
 
+// TODO move to Arrow Fx Coroutines
 suspend fun <E, A, B> Iterable<A>.parTraverseValidated(
   f: suspend CoroutineScope.(A) -> ValidatedNel<E, B>
 ): ValidatedNel<E, List<B>> =
