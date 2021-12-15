@@ -2,12 +2,15 @@ package io.arrow.example
 
 import arrow.optics.optics
 
+@JvmInline
+value class ProductId(val value: String)
+
 @optics
-data class Entry(val id: String, val amount: Int) {
+data class Entry(val id: ProductId, val amount: Int) {
   companion object // required by @optics
 
   val asPair: Pair<String, Int>
-    get() = Pair(id, amount)
+    get() = Pair(id.value, amount)
 }
 
 @optics
