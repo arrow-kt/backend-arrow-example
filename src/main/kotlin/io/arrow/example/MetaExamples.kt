@@ -4,13 +4,13 @@ package io.arrow.example
 import arrow.optics.Every
 
 // WRONG
-// fun Order.containsSingleProductWrong() =
-//   entries.all { entry -> entry.id == entries[0].id }
+fun Order.containsSingleProductWrong() =
+  entries.all { entry -> entry.id == entries[0].id }
 
 // RIGHT
-fun Order.containsSingleProductRight() =
-  if (entries.isEmpty()) false
-  else entries.all { entry -> entry.id == entries[0].id }
+// fun Order.containsSingleProductRight() =
+//   if (entries.isEmpty()) false
+//   else entries.all { entry -> entry.id == entries[0].id }
 
 fun Order.addOneFreeNoOptics(): Order =
   Order(entries.map { it.copy(amount = it.amount + 1) })
