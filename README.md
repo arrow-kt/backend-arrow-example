@@ -12,7 +12,7 @@ The repo contains a small HTTP service built with [Ktor](https://ktor.io) respon
 2. We then validate against the _warehouse_ service that enough of each product still exist,
 3. Finally, we send a request to the _billing_ microservice, which is responsible for handling the payments.
 
-The order is represented as a [simple set of `data` classes](tree/main/src/main/kotlin/io/arrow/examaple/Model.kt) marked as [`@Serializable`](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md).
+The order is represented as a [simple set of `data` classes](src/main/kotlin/io/arrow/example/Model.kt) marked as [`@Serializable`](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md).
 
 ### Validation
 
